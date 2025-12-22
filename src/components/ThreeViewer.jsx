@@ -11,7 +11,7 @@ import { useGLTF, Stage, Environment } from '@react-three/drei';
  * 5. Textures: Embedded textures work best. Keep under 1024px.
  */
 
-function ExternalModel({ url, rotation = [0, 0, 0], autoRotate = false, rotationOffset = 0 }) {
+function ExternalModel({ url, rotation = [0, 0, 0], autoRotate = false, rotationOffset = 0, rotationSpeed = 0.002, containerRef }) {
     const { scene } = useGLTF(url);
     const groupRef = useRef();
 
@@ -19,24 +19,31 @@ function ExternalModel({ url, rotation = [0, 0, 0], autoRotate = false, rotation
         if (groupRef.current) {
             if (autoRotate) {
                 groupRef.current.rotation.y += delta * 0.5;
-            } else {
-                const scrollY = window.scrollY;
-                const stepSize = 8;
-                const angleStep = Math.PI / 80;
-                const targetRotation = Math.floor(scrollY / stepSize) * angleStep;
-                groupRef.current.rotation.y = targetRotation + rotationOffset;
+            } else if (containerRef?.current) {
+                // Calculate position relative to viewport center
+                const rect = containerRef.current.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const elementCenter = rect.top + rect.height / 2;
+                const viewportCenter = viewportHeight / 2;
+
+                // Distance from center in pixels
+                const distanceFromCenter = elementCenter - viewportCenter;
+
+                // Convert distance to rotation
+                // rotationSpeed controls direction and sensitivity
+                groupRef.current.rotation.y = (distanceFromCenter * rotationSpeed) + rotationOffset;
             }
         }
     });
 
     return (
-        <group ref={groupRef} rotation={[0, rotationOffset, 0]}>
+        <group ref={groupRef} rotation={[0, 0, 0]}>
             <primitive object={scene} rotation={rotation} />
         </group>
     );
 }
 
-function Model({ model, scale = 1, rotation = [0, 0, 0], autoRotate = false, rotationOffset = 0 }) {
+function Model({ model, scale = 1, rotation = [0, 0, 0], autoRotate = false, rotationOffset = 0, rotationSpeed = 0.002, containerRef }) {
     const groupRef = useRef(null);
     const modelType = model || 'default';
 
@@ -44,12 +51,18 @@ function Model({ model, scale = 1, rotation = [0, 0, 0], autoRotate = false, rot
         if (groupRef.current && !modelType.endsWith('.glb')) {
             if (autoRotate) {
                 groupRef.current.rotation.y += delta * 0.5;
-            } else {
-                const scrollY = window.scrollY;
-                const stepSize = 8;
-                const angleStep = Math.PI / 80;
-                const targetRotation = Math.floor(scrollY / stepSize) * angleStep;
-                groupRef.current.rotation.y = targetRotation + rotationOffset;
+            } else if (containerRef?.current) {
+                // Calculate position relative to viewport center
+                const rect = containerRef.current.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                const elementCenter = rect.top + rect.height / 2;
+                const viewportCenter = viewportHeight / 2;
+
+                // Distance from center in pixels
+                const distanceFromCenter = elementCenter - viewportCenter;
+
+                // Convert distance to rotation
+                groupRef.current.rotation.y = (distanceFromCenter * rotationSpeed) + rotationOffset;
             }
         }
     });
@@ -58,7 +71,14 @@ function Model({ model, scale = 1, rotation = [0, 0, 0], autoRotate = false, rot
     if (modelType.endsWith('.glb')) {
         return (
             <group scale={scale}>
-                <ExternalModel url={modelType} rotation={rotation} autoRotate={autoRotate} rotationOffset={rotationOffset} />
+                <ExternalModel
+                    url={modelType}
+                    rotation={rotation}
+                    autoRotate={autoRotate}
+                    rotationOffset={rotationOffset}
+                    rotationSpeed={rotationSpeed}
+                    containerRef={containerRef}
+                />
             </group>
         );
     }
@@ -130,7 +150,7 @@ function Model({ model, scale = 1, rotation = [0, 0, 0], autoRotate = false, rot
     };
 
     return (
-        <group scale={scale} ref={groupRef} rotation={[0, rotationOffset, 0]}>
+        <group scale={scale} ref={groupRef} rotation={[0, 0, 0]}>
             {renderGeometry()}
         </group>
     );
@@ -143,14 +163,18 @@ export default function ThreeViewer({
     cameraPos = [3, 5, 3],
     rotation = [0, 0, 0],
     autoRotate = false,
-    rotationOffset = 0
+    rotationOffset = 0,
+    rotationSpeed = 0.002
 }) {
     // Determine if 'environment' is a preset name or a file path
     // Presets in drei: sunset, dawn, night, warehouse, forest, apartment, studio, city, park, lobby, toshimany
     const isPreset = !environment.includes('/') && !environment.includes('.');
 
+    // Create a ref for the container div
+    const containerRef = useRef(null);
+
     return (
-        <div style={{ width: '100%', height: '100%', background: 'transparent' }}>
+        <div ref={containerRef} style={{ width: '100%', height: '100%', background: 'transparent' }}>
             <Canvas
                 dpr={[1, 2]}
                 camera={{ fov: 40, position: cameraPos }}
@@ -169,7 +193,15 @@ export default function ThreeViewer({
                         <Environment files={environment} path="/" />
                     )}
 
-                    <Model model={model} scale={scale} rotation={rotation} autoRotate={autoRotate} rotationOffset={rotationOffset} />
+                    <Model
+                        model={model}
+                        scale={scale}
+                        rotation={rotation}
+                        autoRotate={autoRotate}
+                        rotationOffset={rotationOffset}
+                        rotationSpeed={rotationSpeed}
+                        containerRef={containerRef}
+                    />
                 </Suspense>
             </Canvas>
         </div>
