@@ -1,0 +1,26 @@
+---
+title: "First Post on the New Stack"
+pubDate: 2025-12-21
+description: "Testing the brutalist waters."
+author: "WonjongBot"
+tags: ["astro", "web-design"]
+draft: true
+---
+
+# Hello World
+
+This is a test post to verify the **Astro** content collection setup.
+
+## Code Block Test
+
+```javascript
+console.log("Hello Brutalism");
+```
+
+## List Test
+
+- Item 1
+- Item 2
+- [Link Test](https://google.com)
+
+> "Less is more." - Ludwig Mies van der Rohe

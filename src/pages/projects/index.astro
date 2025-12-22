@@ -1,0 +1,79 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import MediaHover from '../../components/MediaHover.astro';
+
+const pageTitle = "Projects";
+const allProjects = await getCollection('projects');
+// Sort by year descending
+allProjects.sort((a, b) => b.data.year - a.data.year);
+---
+
+<BaseLayout title={pageTitle}>
+    <main>
+        <h1>Projects</h1>
+        <div class="hr-solid"></div>
+
+        <ul style="list-style-type: none; padding: 0;">
+            {allProjects.map((project) => (
+                <li class="project-item" style="margin-bottom: 35px;">
+                    <div class="project-title-row">
+                        <MediaHover 
+                            text={project.data.title.toUpperCase()} 
+                            href={`/projects/${project.slug}`} 
+                            mediaSrc={project.data.image} 
+                            mediaType="image" 
+                            className="project-main-link"
+                        />
+                    </div>
+                    
+                    <div class="project-meta-links">
+                         <a href={`/projects/${project.slug}`}>READ POST</a>
+                         {project.data.github && (
+                             <>
+                                <span class="sep">|</span>
+                                <a href={project.data.github} target="_blank" rel="noopener noreferrer">GITHUB</a>
+                             </>
+                         )}
+                    </div>
+
+                    <p class="project-description">{project.data.description}</p>
+                </li>
+            ))}
+        </ul>
+    </main>
+    <style is:global>
+        .project-item { list-style: none; }
+        .project-title-row { margin-bottom: 5px; }
+        .project-title-row :global(.project-main-link) {
+            font-family: var(--font-serif);
+            font-size: clamp(1.5rem, 5vw, 2rem);
+            font-weight: bold;
+            text-decoration: none;
+            color: black;
+            display: inline-block;
+        }
+        .project-title-row :global(.project-main-link:hover) {
+            background: black;
+            color: white;
+        }
+
+        .project-meta-links {
+            margin-bottom: 15px;
+            font-family: var(--font-serif);
+            font-size: 0.95em;
+            font-weight: bold;
+        }
+        .project-meta-links a { text-decoration: underline; }
+        .project-meta-links .sep { margin: 0 10px; color: #ccc; }
+        .project-meta-links a:hover { text-decoration: none; border-bottom: 2px solid black; }
+
+        .project-description {
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #333;
+            max-width: 700px;
+        }
+    </style>
+</BaseLayout>

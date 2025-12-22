@@ -1,0 +1,41 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const allPosts = await getCollection('posts');
+const allProjects = await getCollection('projects');
+
+const combinedFeed = [
+    ...allProjects.map(p => ({ ...p, type: 'project', date: new Date(p.data.year, 0, 1) })),
+    ...allPosts.map(p => ({ ...p, type: 'post', date: p.data.pubDate }))
+].sort((a, b) => b.date.getTime() - a.date.getTime());
+
+const pageTitle = "Posts";
+---
+
+<BaseLayout title={pageTitle}>
+    <main>
+        <h1>Posts</h1>
+        <p>A combined feed of log posts and project updates.</p>
+
+        <div class="hr-solid"></div>
+
+        <ul style="list-style-type: none; padding: 0;">
+            {combinedFeed.map((item) => (
+                <li style={`margin-bottom: var(--v-gap); border-bottom: 1px dotted #ccc; padding-bottom: var(--v-gap-small);`}>
+                    <span style="font-family: var(--font-mono); font-size: 0.8em; margin-right: 15px; color: #888;">
+                        {item.date.toISOString().slice(0,10)}
+                    </span>
+                    <span style="font-size: 0.7em; border: 1px solid #ccc; padding: 1px 4px; margin-right: 15px; font-family: var(--font-mono); vertical-align: middle;">
+                        {item.type.toUpperCase()}
+                    </span>
+                    <a href={item.type === 'project' ? `/projects/${item.slug}` : `/posts/${item.slug}`} style="font-family: var(--font-serif); font-size: 1.1rem; text-decoration: underline;">
+                        {item.data.title}
+                    </a>
+                </li>
+            ))}
+        </ul>
+        
+        {combinedFeed.length === 0 && <p><em>No entries found in the directory.</em></p>}
+    </main>
+</BaseLayout>

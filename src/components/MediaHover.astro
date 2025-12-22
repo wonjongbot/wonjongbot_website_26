@@ -1,0 +1,77 @@
+---
+interface Props {
+	text: string;
+	href: string;
+	mediaSrc: string; // URL to image/video
+    mediaType: 'image' | 'video';
+}
+
+const { text, href, mediaSrc, mediaType } = Astro.props;
+const uniqueId = `media-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<span class="media-hover-container">
+    <a href={href} class="media-link" data-target={uniqueId}>{text}</a>
+    <div id={uniqueId} class="media-preview" style="display: none;">
+        {mediaType === 'image' ? (
+            <img src={mediaSrc} alt="Preview" />
+        ) : (
+            <video autoplay loop muted playsinline>
+                <source src={mediaSrc} type="video/mp4" />
+            </video>
+        )}
+    </div>
+</span>
+
+<style>
+    .media-hover-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .media-preview {
+        position: absolute; /* Will be fixed via JS to follow cursor usually, but for now simple absolute near link */
+        z-index: 100;
+        border: 2px solid black;
+        background: white;
+        pointer-events: none;
+        width: 300px; /* Fixed width preview */
+        display: none;
+        top: 20px;
+        left: 20px;
+        box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+    }
+
+    .media-preview img, .media-preview video {
+        width: 100%;
+        display: block;
+    }
+</style>
+
+<script>
+    // Simple logic to show/hide on hover. 
+    // For "OG OpenAI" style, it usually follows cursor. Let's make it follow cursor fixed to viewport.
+    
+    document.querySelectorAll('.media-link').forEach(link => {
+        const targetId = link.getAttribute('data-target');
+        const previewEl = document.getElementById(targetId!);
+
+        if (previewEl) {
+            link.addEventListener('mouseenter', () => {
+                previewEl.style.display = 'block';
+                previewEl.style.position = 'fixed'; // Float relative to viewport
+            });
+
+            link.addEventListener('mousemove', (e) => {
+                const navHeight = 0; // Adjust if needed
+                // Offset by 20px so mouse isn't covering it
+                previewEl.style.left = (e.clientX + 20) + 'px'; 
+                previewEl.style.top = (e.clientY + 20) + 'px';
+            });
+
+            link.addEventListener('mouseleave', () => {
+                previewEl.style.display = 'none';
+            });
+        }
+    });
+</script>

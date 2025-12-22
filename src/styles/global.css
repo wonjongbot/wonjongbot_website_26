@@ -1,0 +1,138 @@
+/* The Anti-Design System */
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --border-color: #000000;
+  --font-serif: "Times New Roman", Times, serif;
+  --font-mono: "Courier New", Courier, monospace;
+  --link-color: #0000ee;
+  --visited-color: #551a8b;
+  /* Vertical Spacing Knobs */
+  --v-gap: 10px;
+  --v-gap-small: 10px;
+  --v-padding: 20px;
+  --v-padding-xsmall: 1px;
+  --h-padding-small: 4px;
+  --h-gap-small: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  margin: 0;
+  padding: 0;
+  scrollbar-gutter: stable;
+  /* Prevent shifting when scrollbar appears */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-serif);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.4;
+  /* Prevent horizontal scroll from 3D canvas if resizing */
+  overflow-x: hidden;
+}
+
+/* Raw HTML feel for common elements */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  font-weight: bold;
+  margin-bottom: 0.5em;
+  margin-top: 1.25em;
+}
+
+h1 {
+  font-size: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+  display: inline-block;
+  padding-right: 20px;
+  margin-top: 0.5em;
+}
+
+p {
+  margin-bottom: 1em;
+  max-width: 800px;
+}
+
+a {
+  color: var(--link-color);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+a:visited {
+  color: var(--visited-color);
+}
+
+a:hover {
+  background-color: var(--link-color);
+  color: white;
+  text-decoration: none;
+}
+
+pre,
+code {
+  color: #f0f0f0 !important;
+  background: #1a1a1a !important;
+  font-family: var(--font-mono) !important;
+}
+
+pre {
+  background: #1a1a1a !important;
+  padding: 1.5rem !important;
+  border: 1px solid #333 !important;
+  border-radius: 4px;
+}
+
+code {
+  background: #1a1a1a !important;
+  padding: 0.2rem 0.4rem !important;
+  border-radius: 3px;
+}
+
+/* Shiki / Syntax Highlighting Overrides */
+pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--v-padding) 20px;
+  width: 100%;
+}
+
+main {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.brutalist-border {
+  border: 1px solid var(--border-color);
+  padding: var(--v-padding);
+  margin-bottom: var(--v-gap);
+  background: white;
+}
+
+hr,
+.hr-solid {
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  margin: var(--v-gap) 0;
+}

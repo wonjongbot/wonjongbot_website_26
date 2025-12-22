@@ -1,0 +1,278 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import profileImage from '../assets/profile.jpg';
+import MediaHover from '../components/MediaHover.astro';
+import ThreeViewer from '../components/ThreeViewer.jsx';
+
+// Fetch projects for the timeline/feed
+const allProjects = await getCollection('projects');
+allProjects.sort((a, b) => b.data.year - a.data.year);
+
+// Fetch all posts
+const allPosts = await getCollection('posts');
+
+// Combine projects and posts for the "Latest Posts" feed
+const combinedFeed = [
+    ...allProjects.map(p => ({ ...p, type: 'project', date: new Date(p.data.year, 0, 1) })), // Default to Jan 1st of that year
+    ...allPosts.map(p => ({ ...p, type: 'post', date: p.data.pubDate }))
+].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 10);
+
+const pageTitle = "Peter Lee";
+---
+
+<BaseLayout title={pageTitle}>
+    <main>
+        
+        {/* 1. HERO SECTION */}
+        <section class="hero-section">
+            <div class="intro-grid">
+                <Image src={profileImage} alt="Peter Lee - Computer Engineering Student at UIUC" class="profile-img" width={500} height={500} />
+                <div class="intro-text">
+                    <!-- <p class="lead">Peter Lee</p> -->
+                    <p>Welcome to my website! My name is <strong>Peter Lee</strong> (이원종: Wonjong Lee).</p>
+                    <p>
+                        <ul>
+                            <li>I am a junior at the University of Illinois at Urbana-Champaign (UIUC), majoring in Computer Engineering.</li>
+                            <li>My interests are computer architecture, design verification, and performance modeling.</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+            <p>
+                Incoming DV Intern at <strong>Apple</strong> (CPU Verification).<br/>
+                Previously at <strong>Rebellions</strong> (Post-Si Validation and bringup intern) and <strong>Rivian</strong> (Pre-Si Verfication intern).
+            </p>
+            <p>
+                 <a href="mailto:wonjong3 (at) illinois (dot) edu">wonjong3 (at) illinois (dot) edu</a> | <a href="/cv">Resume</a>
+            </p>
+        </section>
+
+        <div class="hr-solid"></div>
+
+        {/* 2. HALL OF FAME (3D) */}
+        <section id="hof" class="hof-section">
+            <h2>Chips I worked on</h2>
+            <p><em>Here are some of the chips I had the privilege of working on. (All images are from public sources)</em></p>
+            
+            <div class="hof-grid">
+                <div class="hof-tile">
+                    <div class="viewer-container" role="img" aria-label="3D model of REBEL_QUAD NPU chip">
+                        <ThreeViewer client:only="react" model="/models/rebel.glb" scale={0.65} rotation={[Math.PI / 4, 0, 0]} cameraPos={[3, 3, 3]} rotationOffset={-Math.PI / 3}/>
+                    </div>
+                    <div class="chip-label">
+                        <strong>REBEL_QUAD</strong><br/>
+                        UCIE-A based NPU @ Rebellions
+                    </div>
+                </div>
+                <div class="hof-tile">
+                    <div class="viewer-container" role="img" aria-label="3D model of Rivian Autonomy Processor 1 (RAP1) chip">
+                        <ThreeViewer client:only="react" model="/models/rap1.glb" scale={0.65} rotation={[Math.PI / 4, 0, 0]} cameraPos={[3, 3, 3]} rotationOffset={-Math.PI / 3}/>
+                    </div>
+                    <div class="chip-label">
+                        <strong>Rivian Autonomy Processor 1 (RAP1)</strong><br/>
+                        Custom Silicon for Autonomy @ Rivian
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="hr-solid"></div>
+
+        {/* 3. Projects FEED */}
+        <section class="projects-section">
+            <h2>Selected Work</h2>
+            {allProjects.map((project) => (
+                <div class="project-item">
+                    <div class="project-title-row">
+                        <MediaHover 
+                            text={project.data.title.toUpperCase()} 
+                            href={`/projects/${project.slug}`} 
+                            mediaSrc={project.data.image} 
+                            mediaType="image" 
+                            className="project-main-link"
+                        />
+                    </div>
+                    
+                    <div class="project-meta-links">
+                         <a href={`/projects/${project.slug}`}>READ POST</a>
+                         {project.data.github && (
+                             <>
+                                <span class="sep">|</span>
+                                <a href={project.data.github} target="_blank" rel="noopener noreferrer">GITHUB</a>
+                             </>
+                         )}
+                    </div>
+
+                    <p class="project-description">{project.data.description}</p>
+                </div>
+            ))}
+        </section>
+
+        <div class="hr-solid"></div>
+
+        {/* 4. POSTS SECTION (Combined Feed) */}
+        {combinedFeed.length > 0 && (
+            <section class="posts-section">
+                <h2>Latest Posts</h2>
+                <ul style="list-style: none; padding: 0;">
+                    {combinedFeed.map((item) => (
+                        <li style="margin-bottom: var(--v-gap-small); font-family: var(--font-serif);">
+                            <span style="font-family: var(--font-mono); font-size: 0.8em; margin-right: var(--h-gap-small); color: #888;">
+                                {item.date.toISOString().slice(0,10)}
+                            </span>
+                             <span class="type-badge" style="font-size: 0.7em; border: 1px solid #ccc; padding: var(--v-padding-xsmall) var(--h-padding-small); margin-right: var(--h-gap-small); vertical-align: middle; font-family: var(--font-mono);">
+                                {item.type.toUpperCase()}
+                            </span>
+                            <MediaHover 
+                                text={item.data.title} 
+                                href={item.type === 'project' ? `/projects/${item.slug}` : `/posts/${item.slug}`} 
+                                mediaSrc={item.data.image || "/images/profile.jpg"} 
+                                mediaType="image"
+                                style="font-weight: bold;"
+                            />
+                        </li>
+                    ))}
+                </ul>
+                <a href="/posts" style="font-weight: bold; display: inline-block; margin-top: 10px;">Archive -></a>
+            </section>
+        )}
+
+    </main>
+</BaseLayout>
+
+<style>
+    /* V3 Vertical Layout Styles */
+    
+    .hero-section {
+        padding: var(--v-gap) 0;
+    }
+    .intro-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px; /* var(--v-gap) might be too small for horizontal gap, sticking to 30px for visual separation */
+        align-items: center;
+        margin-bottom: var(--v-gap);
+    }
+    .profile-img {
+        flex: 0 0 250px; /* Fixed width, don't grow, don't shrink */
+        width: 250px;
+        height: 250px;
+        object-fit: cover;
+        border: 1px solid black;
+    }
+    .intro-text {
+        flex: 1 1 300px; /* Grow, shrink, but basis 300px */
+        min-width: 0; /* Prevent flex overflow */
+        padding-left: 0;
+    }
+    .lead {
+        font-size: 2.5rem;
+        font-weight: bold;
+        line-height: 1.1;
+        margin-bottom: 0.5rem;
+        font-family: var(--font-serif);
+    }
+
+    .hof-section { padding: var(--v-gap) 0; }
+    .hof-grid {
+        display: grid;
+        /* Robust auto-fit: will wrap to 1 column if < 300px available, otherwise fills space */
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        margin-top: 20px;
+    }
+    .hof-tile {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .viewer-container {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        border: 0px solid black;
+        /* background: #fdfdfd; */
+        overflow: hidden; /* Prevent canvas overflow */
+    }
+    .chip-label {
+        font-family: var(--font-serif);
+        font-size: 1rem;
+        color: #000;
+        line-height: 1.4;
+    }
+
+    .projects-section { padding: var(--v-gap) 0; }
+    .project-item {
+        margin-bottom: 30px;
+        padding-bottom: 0px;
+    }
+    .project-title-row {
+        margin-bottom: 5px;
+    }
+    .project-title-row :global(.project-main-link) {
+        font-family: var(--font-serif);
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        font-weight: bold;
+        text-decoration: none;
+        color: black;
+        display: inline-block;
+    }
+    .project-title-row :global(.project-main-link:hover) {
+        background: black;
+        color: white;
+    }
+
+    .project-meta-links {
+        margin-bottom: 15px;
+        font-family: var(--font-serif);
+        font-size: 0.95em;
+        font-weight: bold;
+    }
+    .project-meta-links a { text-decoration: underline; }
+    .project-meta-links .sep { margin: 0 10px; color: #ccc; }
+    .project-meta-links a:hover { text-decoration: none; border-bottom: 2px solid black; }
+
+    .project-description {
+        font-family: var(--font-serif);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #333;
+        max-width: 700px;
+    }
+
+    .posts-section { padding: var(--v-gap) 0 10px 0; }
+
+    .brutalist-btn {
+        display: inline-block;
+        border: 1px solid black;
+        padding: 5px 15px;
+        text-decoration: none;
+        margin-right: 10px;
+        font-family: var(--font-mono);
+        font-size: 0.8em;
+        background: white;
+        color: black;
+        text-transform: uppercase;
+        font-weight: bold;
+    }
+    .brutalist-btn:hover {
+        background: black;
+        color: white;
+    }
+
+    /* Standard responsive adjustments */
+    @media (max-width: 600px) {
+        .intro-grid {
+            justify-content: center;
+            text-align: center;
+        }
+        .intro-text {
+            text-align: center;
+        }
+        .profile-img {
+            margin: 0 auto;
+        }
+        /* HOF Grid handles itself via auto-fit, no need for forced override unless very small */
+    }
+</style>

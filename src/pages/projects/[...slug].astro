@@ -1,0 +1,62 @@
+---
+import KernelEmulator from '../../components/KernelEmulator.astro';
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map(entry => ({
+    params: { slug: entry.slug }, props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<BaseLayout title={entry.data.title}>
+    <main>
+        <nav class="subpage-nav">
+            <a href="/">&lt; DIRECTORY UP (HOME)</a>
+        </nav>
+        
+        <header class="project-header">
+            <h1>{entry.data.title}</h1>
+            <div class="project-meta">
+                YEAR: {entry.data.year} | 
+                {entry.data.demo && <a href={entry.data.demo}>[VIEW DEMO]</a>}
+                {entry.data.link && <a href={entry.data.link}>[GITHUB REPO]</a>}
+            </div>
+        </header>
+        
+        <div class="hr-solid"></div>
+        
+        {/* Special Case: Kernel Emulator */}
+        {entry.slug.includes('kernel') && (
+            <KernelEmulator />
+        )}
+
+        <div class="project-content">
+            <Content />
+        </div>
+        
+        <div class="hr-solid"></div>
+    </main>
+</BaseLayout>
+
+<style is:global>
+    .subpage-nav { margin-bottom: var(--v-gap); font-family: var(--font-mono); font-size: 0.9em; }
+    .project-header h1 { margin-top: var(--v-gap-small); margin-bottom: var(--v-gap-small); font-family: var(--font-serif); }
+    .project-meta { font-family: var(--font-mono); font-size: 0.85em; margin-bottom: var(--v-gap); color: #555; }
+
+    .project-content { font-family: var(--font-serif); line-height: 1.6; }
+    .project-content h1 { font-size: 1.8rem; border-bottom: none; font-family: var(--font-serif); }
+    .project-content h2 { font-size: 1.5rem; border-bottom: 1px dotted #000; margin-top: 2em; font-family: var(--font-serif); }
+    .project-content p, .project-content li { font-family: var(--font-serif); }
+    .project-content ul, .project-content ol { margin-bottom: 1em; padding-left: 1.5em; }
+    .project-content img {
+        max-width: 100%;
+        border: 1px solid black;
+        margin: var(--v-gap) 0;
+    }
+</style>

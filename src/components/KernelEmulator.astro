@@ -1,0 +1,101 @@
+---
+---
+<div class="emulator-centering-wrapper">
+    <div class="emulator-wrapper">
+        <div id="screen_container">
+            <div id="emu_text"></div>
+            <canvas id="emu_screen" oncontextmenu="event.preventDefault()"></canvas>
+        </div>
+        
+        <div class="controls-hint">
+            <p><strong>Kernel Demo</strong> | <a href="#" id="reset-btn">RESET SYSTEM</a></p>
+            <p class="small">Press Alt+F1/F2/F3 to switch terminals.</p>
+        </div>
+    </div>
+</div>
+
+<script is:inline src="/kernel/libv86.js"></script>
+<script is:inline>
+    // Initialize v86
+    window.onload = function() {
+        // Simple check to prevent double init if navigating back/forth with ViewTransitions (if enabled)
+        if (window.emulatorInstance) return;
+
+        console.log("Booting 391OS...");
+        
+        var emulator = new V86({
+            wasm_path: "/kernel/v86.wasm",
+            memory_size: 32 * 1024 * 1024,
+            vga_memory_size: 4 * 1024,
+            screen_container: document.getElementById("screen_container"),
+            bios: { url: "/kernel/seabios.bin" },
+            vga_bios: { url: "/kernel/vgabios.bin" },
+            hda: { url: "/kernel/mp3.img" },
+            autostart: true,
+            disable_audio: true,
+        });
+        
+        window.emulatorInstance = emulator;
+
+        document.getElementById('reset-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.reload();
+        });
+    }
+</script>
+
+<style>
+    @font-face {
+        font-family: "Web IBM VGA 8x16";
+        src: url("/kernel/Web437_IBM_VGA_8x16.woff") format("woff");
+    }
+
+    .emulator-centering-wrapper {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        margin: 40px 0;
+    }
+
+    .emulator-wrapper {
+        border: 2px solid black;
+        padding: 4px;
+        background: #000;
+        display: inline-block; /* Wrap content exactly */
+        box-shadow: 8px 8px 0px #eee;
+        max-width: 100%;
+    }
+
+    #screen_container {
+        background: #000;
+        text-align: left;
+        display: block;
+        padding: 4px;
+    }
+
+    #emu_text {
+        white-space: pre;
+        font-family: "Web IBM VGA 8x16", monospace;
+        font-size: 16px;
+        line-height: 1;
+        color: #fff;
+    }
+
+    #emu_screen {
+        display: block;
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .controls-hint {
+        color: #0f0;
+        font-family: "Web IBM VGA 8x16", var(--font-mono);
+        padding: 15px;
+        text-align: left;
+        border-top: 1px solid #333;
+    }
+
+    .controls-hint p { margin: 5px 0; }
+    .controls-hint a { color: #0f0; text-decoration: underline; font-weight: bold; }
+    .small { font-size: 0.85em; color: #0a0; margin-top: 5px; }
+</style>
