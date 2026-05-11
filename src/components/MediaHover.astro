@@ -2,23 +2,57 @@
 interface Props {
 	text: string;
 	href: string;
-	mediaSrc: string; // URL to image/video
-    mediaType: 'image' | 'video';
+	mediaSrc?: string; // URL to image/video
+    mediaType?: 'image' | 'video';
+    previewTitle?: string;
+    previewType?: string;
+    previewDate?: string;
+    previewDescription?: string;
+    className?: string;
+    style?: string;
 }
 
-const { text, href, mediaSrc, mediaType } = Astro.props;
+const {
+    text,
+    href,
+    mediaSrc,
+    mediaType = 'image',
+    previewTitle,
+    previewType,
+    previewDate,
+    previewDescription,
+    className,
+    style
+} = Astro.props;
 const uniqueId = `media-${Math.random().toString(36).substr(2, 9)}`;
+const hasMediaPreview = Boolean(mediaSrc);
 ---
 
 <span class="media-hover-container">
-    <a href={href} class="media-link" data-target={uniqueId}>{text}</a>
+    <a href={href} class:list={['media-link', className]} style={style} data-target={uniqueId}>{text}</a>
     <div id={uniqueId} class="media-preview" style="display: none;">
-        {mediaType === 'image' ? (
+        {hasMediaPreview ? (
+            mediaType === 'image' ? (
             <img src={mediaSrc} alt="Preview" />
         ) : (
             <video autoplay loop muted playsinline>
                 <source src={mediaSrc} type="video/mp4" />
             </video>
+            )
+        ) : (
+            <div class="page-preview-card">
+                {previewType && (
+                    <div class="page-preview-type">{previewType}</div>
+                )}
+                <div class="page-preview-title">{previewTitle || text}</div>
+                {previewDate && (
+                    <div class="page-preview-date">{previewDate}</div>
+                )}
+                {previewDescription && (
+                    <p class="page-preview-description">{previewDescription}</p>
+                )}
+                <div class="page-preview-link">Open page</div>
+            </div>
         )}
     </div>
 </span>
@@ -40,11 +74,63 @@ const uniqueId = `media-${Math.random().toString(36).substr(2, 9)}`;
         top: 20px;
         left: 20px;
         box-shadow: 4px 4px 0px 0px rgba(0,0,0,1);
+        overflow: hidden;
     }
 
     .media-preview img, .media-preview video {
         width: 100%;
         display: block;
+    }
+
+    .page-preview-card {
+        padding: 18px;
+        background:
+            linear-gradient(180deg, #f5f5f0 0%, #ffffff 100%);
+        color: black;
+        font-family: var(--font-serif);
+    }
+
+    .page-preview-type,
+    .page-preview-date,
+    .page-preview-link {
+        font-family: var(--font-mono);
+    }
+
+    .page-preview-type {
+        display: inline-block;
+        margin-bottom: 12px;
+        padding: 2px 6px;
+        border: 1px solid black;
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+    }
+
+    .page-preview-title {
+        font-size: 1.2rem;
+        line-height: 1.2;
+        font-weight: bold;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    .page-preview-date {
+        margin-bottom: 12px;
+        font-size: 0.76rem;
+        color: #444;
+    }
+
+    .page-preview-description {
+        margin: 0 0 14px;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+
+    .page-preview-link {
+        display: inline-block;
+        border-bottom: 1px solid black;
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
     }
 </style>
 

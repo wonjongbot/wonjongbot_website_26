@@ -128,8 +128,12 @@ const pageTitle = "Peter Lee";
                             <MediaHover 
                                 text={item.data.title} 
                                 href={item.type === 'project' ? `/projects/${item.slug}` : `/posts/${item.slug}`} 
-                                mediaSrc={item.data.image || "/images/profile.jpg"} 
+                                mediaSrc={item.data.image}
                                 mediaType="image"
+                                previewTitle={item.data.title}
+                                previewType={item.type.toUpperCase()}
+                                previewDate={item.date.toISOString().slice(0,10)}
+                                previewDescription={item.data.description}
                                 style="font-weight: bold;"
                             />
                         </li>
